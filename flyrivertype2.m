@@ -99,7 +99,8 @@ tic
         landc=1;
         [landGrid_prob]=gridprob(landGrid,landc,waterc);
     else
-        [landGrid_prob,~]=Alt_gridprob(altGrid);
+        %[landGrid_prob,~]=Alt_gridprob(altGrid);
+		[landGrid_prob,~]=Alt_gridprob2(altGrid);
     end
     
     for t=1:Tf
@@ -262,6 +263,6 @@ tic
     simdata{t+1}=flies;
     % profsave;
 %     p=profile('info');
-    save(datestr(now,'mmmm_dd_yyyy_HH_MM_SS_FFF_AM'),'simulationTimeLength','Tf','landGrid','deathInformation','simdata','flyPopulationSize','gridType','pb','pd','numberOfKids','nmoves','-v7.3');
+    save(datestr(now,'mmmm_dd_yyyy_HH_MM_SS_FFF_AM'),'simulationTimeLength','Tf','landGrid','altGrid','deathInformation','simdata','flyPopulationSize','gridType','pb','pd','numberOfKids','nmoves','-v7.3');
     toc
 end
