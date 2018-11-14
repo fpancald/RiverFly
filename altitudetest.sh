@@ -4,7 +4,10 @@
 #This job calls type2scriptalt that makes flies immortal and nonrepriducing. The flies just move.
 #This allows to check how the movement probabilities based on altitude influece the distribution of flies after a number of timesteps.
 
-#$ -pe smp 24         
+
+#$ -l h=!q16copt120
+#$ -q long
+#$ -pe smp 8         
 #$ -N  alttest 	# Specify job name
 #$ -t 1-1:1       #specify number of data input files
 #$ -q long

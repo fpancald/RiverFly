@@ -3,7 +3,10 @@
 #Submission script for multibr job
 #This job calls type3script that allows to specify the numberofkids through the task umber.
 
-#$ -pe smp 24         
+
+#$ -l h=!q16copt120
+#$ -q long
+#$ -pe smp 8         
 #$ -N  multibr 	# Specify job name
 #$ -t 1-100:1       #specify number of data input files
 #$ -q long

@@ -11,7 +11,7 @@ function flyrivertype2(gridType,pb,pd,numberOfKids,simulationTimeLength,flyPopul
     %number of moves per time steps go from 1 to a few tens
     %birth per egg laying from 12 to 1000
 tic
-    cutoffpop=100000; %simulation cutoof point
+    cutoffpop=1000000; %simulation cutoof point
     Tf=simulationTimeLength;
 %     profile on -history
     %Fly Model
@@ -100,7 +100,9 @@ tic
         [landGrid_prob]=gridprob(landGrid,landc,waterc);
     else
         %[landGrid_prob,~]=Alt_gridprob(altGrid);
-		[landGrid_prob,~]=Alt_gridprob2(altGrid);
+		%[landGrid_prob,~]=Alt_gridprob2(altGrid);%needs debugging
+		a=1;
+		[landGrid_prob,~]=Alt_gridprob3(altGrid,a);
     end
     
     for t=1:Tf

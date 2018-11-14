@@ -1,1 +1,14 @@
 *.mat
+*.o*.*
+*.tfw
+*.tif
+*.ovr
+*.cpg
+*.dbf
+*.prj
+*.sbn
+*.sbx
+*.shp
+*.xml
+*.shx
+
