@@ -12,8 +12,8 @@
 #$ -q long
 #$ -r y
 
-set shape=( SanDimasSubset.shp )
-set alt=( DimasSubsetElevation.tif )
+set shape=( SanDimasSubset.shp VenturaRiv1_2.shp )
+set alt=( DimasSubsetElevation.tif Ventura1_2.tif )
 module load matlab
 
 matlab -nodisplay -nosplash -nojvm -r "type4simscript('$shape[${SGE_TASK_ID}]','$alt[${SGE_TASK_ID}]');exit"
