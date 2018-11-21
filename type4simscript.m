@@ -1,8 +1,8 @@
-function type4simscript(shapefile,altfile,Ntask)
+function type4simscript(shapefile,altfile)
 	gridType={4,shapefile,altfile};%shape+altitude
 	pb=0.0270;
 	pd=0.089;
-	numberOfKids=Ntask;
+	numberOfKids=12;
 	simulationTimeLength=672;
 	flyPopulationSize=10000;
 	nmoves=1;
