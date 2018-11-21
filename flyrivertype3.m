@@ -1,26 +1,31 @@
-function flyrivertype2(gridType,pb,pd,numberOfKids,simulationTimeLength,flyPopulationSize,nmoves)
-    %gridType={1,numberOfSplits,widthOfRiver} (random),{2,numberOfSplits,widthOfRiver} (fractal), or
-    %{3,shapefile,res,buffer} (shapefile)
-    %{4,shapefile,altfile} (shapefile+altfile)
-    %all females probability of release on water pb=0.5, probability of death (pd=0.0089
-    %2 week 95%+ are dead, pd=0.0177)
-    %1 square=1 m^2
-    %biggest domain length a few kms (a few thousand square edges)
-    %density from tens to a few hundreds per m^2 (10 to 1000)
-    %time step=1 hour max time 2 weeks(=336 time steps)
-    %number of moves per time steps go from 1 to a few tens
-    %birth per egg laying from 12 to 1000
-tic
-    cutoffpop=100000; %simulation cutoof point
-    Tf=simulationTimeLength;
-%     profile on -history
+% gridType={1,numberOfSplits,widthOfRiver,waterc,landc} (random),{2,numberOfSplits,widthOfRiver,waterc,landc} (fractal), or
+    % {3,shapefile,res,buffer,waterc,landc} (shapefile)
+    % {4,shapefile,altfile} (shapefile+altfile)
+	% {5,shapefile,altfile} (shapefile+altfile+orderstream)
+    % all females probability of release on water pb=0.5, probability of death (pd=0.0089
+    % 2 week 95%+ are dead, pd=0.0177)
+    % 1 square=1 m^2
+    % biggest domain length a few kms (a few thousand square edges)
+    % density from tens to a few hundreds per m^2 (10 to 1000)
+    % time step=1 hour max time 2 weeks(=336 time steps)
+    % number of moves per time steps go from 1 to a few tens
+    % birth per egg laying from 12 to 1000
+function flyrivertype3(gridType,pb,pd,numberOfKids,simulationTimeLength,flyPopulationSize,nmoves,altprobcoeff,cuttoffpop, profileswitch, timingswitch)
+	if timingswitch==1    
+		tic
+	end
+    Tf=simulationTimeLength;%Final Time
+	%profile switch
+	if profileswitch==1
+		profile on -history
+	end
+	
     %Fly Model
     if gridType{1}==1 || gridType{1}==2
         numberOfSplits=gridType{2};
         widthOfRiver=gridType{3};
         %create the river
         [~,riverRegionPlaceholder]=riverCreation(numberOfSplits,widthOfRiver);%???
-%         regionRadiusFromCentralRiver=1;%???
 
         %create the space
         landGrid=zeros(2*size(riverRegionPlaceholder,1),2*size(riverRegionPlaceholder,2));
@@ -30,8 +35,6 @@ tic
         %random
         landGrid=randi([0 1], size(landGrid,1),size(landGrid,2));
         n = size(landGrid,1) ; m = size(landGrid,2) ;
-%         A1 = rand(n,m) < 0.5; % a logical array consuming little memory
-%         A2 = round(rand(n,m));
         N0 = ceil(8*n*m/9) ; % specify some exact number of zeros
         A3 = ones(n,m) ; A3(1:N0) = 0 ; A3(randperm(numel(A3))) = A3;
         landGrid=A3;
@@ -48,24 +51,9 @@ tic
         landGrid=readshape2(gridType{2},res,buffer);
     elseif gridType{1}==4
         [landGrid,altGrid]=readshapealt(gridType{2},gridType{3});
+	elseif gridType{1}==5
+		[landGrid,altGrid]=readshapealtord(gridType{2},gridType{3});
     end
-
-    %probability weights?
-%     pb=0.0135;%0.033725;
-%     pd=0.089;
-%     reflectOdds=2;
-%     riverOdds=6;
-%     wildernessOdds=2;
-%     mouthDeathOdds=4;
-
-%     deathOdds=0.025;%death rate?
-
-%     %needed?
-%     reflect=reflectOdds;
-%     river=riverOdds;
-%     wilderness=wildernessOdds;
-%     mouthDeath=mouthDeathOdds;
-%     trueDeath=deathOdds;
 
     simdata=cell(1,Tf+1);
 
@@ -81,38 +69,24 @@ tic
     [flies(:,1), flies(:,2), flies(:,3), flies(:,4)]=flyPositioning(flyPopulationSize,coordinates);
     flies(:,6)=flies(:,1);
     flies(:,7)=flies(:,2);
-    % [xBegin, yBegin, gender, geneticPool]=flyPositioning(flyPopulationSize,coordinates);
-    % for i=1:flyPopulationSize
-    %     flies(i,1)=xBegin(i);%current positions
-    %     flies(i,2)=yBegin(i);
-    %     flies(i,3)=gender(i);%gender
-    %     flies(i,4)=geneticPool(i);%genes
-    %     flies(i,5)=0;%traveled
-    %     flies(i,6)=flies(i,1);%initial position
-    %     flies(i,7)=flies(i,2);
-    % end
 
 
-    %for move_v2 and v3 weights of water and land
-    if gridType{1}~=4
-        waterc=2;
-        landc=1;
+    %for gridprob need weights of water and land type 1 to 3
+    if gridType{1}~=4 && gridType{1}~=5
+        waterc=gridType{end-1};
+        landc=gridType{end};
         [landGrid_prob]=gridprob(landGrid,landc,waterc);
-    else
+    else %type 4 and 5
         %[landGrid_prob,~]=Alt_gridprob(altGrid);
 		%[landGrid_prob,~]=Alt_gridprob2(altGrid);%needs debugging
-		a=0.001;
-		[landGrid_prob,~]=Alt_gridprob3(altGrid,a);
+		[landGrid_prob,~]=Alt_gridprob3(altGrid,altprobcoeff);
     end
     
     for t=1:Tf
         for mv=1:nmoves
             %%%%%%%% movement %%%%%%%%%%%
-        %     [fliesHolder]=move(flies,landGrid,size(flies,1),coordinates,t);%water,land,death);
-            [fliesHolder]=move_v3(flies,landGrid,landGrid_prob,size(flies,1),coordinates,t);%water,land,death);
-            %movement of the flies per timestep
-            %[x,y,z]=movement(xAlpha,yAlpha,movementCounter,reflect,river,wilderness,mouthDeath,trueDeath);
-            %flies(i,:)=fly;
+            [fliesHolder]=move_v3(flies,landGrid,landGrid_prob,size(flies,1),coordinates,t);
+
             deathidx=[];
             for i=1:size(flies,1)
 
@@ -263,8 +237,15 @@ tic
         end
     end
     simdata{t+1}=flies;
-    % profsave;
-%     p=profile('info');
-    save(datestr(now,'mmmm_dd_yyyy_HH_MM_SS_FFF_AM'),'simulationTimeLength','Tf','landGrid','altGrid','deathInformation','simdata','flyPopulationSize','gridType','pb','pd','numberOfKids','nmoves','-v7.3');
-    toc
+	
+	%profile switch
+	if profileswitch==1
+		profsave;
+		p=profile('info');
+	end
+    save(datestr(now,'mmmm_dd_yyyy_HH_MM_SS_FFF_AM'),'simulationTimeLength','Tf','landGrid','altGrid','deathInformation','simdata','flyPopulationSize','gridType','pb','pd','numberOfKids','nmoves','altprobcoeff','cuttoffpop', 'profileswitch', 'timingswitch','-v7.3');
+    
+	if timingswitch==1
+		toc
+	end
 end

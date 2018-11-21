@@ -1,5 +1,5 @@
 function type3script(shapefile,altfile,Ntask)
-	gridType={4,shapefile,altfile};
+	gridType={4,shapefile,altfile};%shape+altitude
 	pb=0.0270;
 	pd=0.089;
 	numberOfKids=Ntask;

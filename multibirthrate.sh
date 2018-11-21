@@ -6,7 +6,7 @@
 
 #$ -l h=!q16copt120
 #$ -q long
-#$ -pe smp 8         
+#$ -pe smp 24         
 #$ -N  multibr 	# Specify job name
 #$ -t 1-100:1       #specify number of data input files
 #$ -q long
