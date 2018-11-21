@@ -3,12 +3,11 @@
 #Submission script for type4 simulation
 
 
-
 #$ -l h=!q16copt120
 #$ -q long
 #$ -pe smp 24         
 #$ -N  type4 	# Specify job name
-#$ -t 1-1:1       #specify number of data input files
+#$ -t 1-2:1       #specify number of data input files
 #$ -q long
 #$ -r y
 
