@@ -2,6 +2,7 @@
     % {3,shapefile,res,buffer,waterc,landc} (shapefile)
     % {4,shapefile,altfile} (shapefile+altfile)
 	% {5,shapefile,altfile} (shapefile+altfile+orderstream)
+	% {6,shapefile,altfile,eggtime} (shapefile+altfile+orderstream+eggs)
     % all females probability of release on water pb=0.5, probability of death (pd=0.0089
     % 2 week 95%+ are dead, pd=0.0177)
     % 1 square=1 m^2
@@ -10,7 +11,7 @@
     % time step=1 hour max time 2 weeks(=336 time steps)
     % number of moves per time steps go from 1 to a few tens
     % birth per egg laying from 12 to 1000
-function flyrivertype3(gridType,pb,pd,numberOfKids,simulationTimeLength,flyPopulationSize,nmoves,altprobcoeff,cutoffpop, profileswitch, timingswitch)
+function flyrivertype4(gridType,pb,pd,numberOfKids,simulationTimeLength,flyPopulationSize,nmoves,altprobcoeff,cutoffpop, profileswitch, timingswitch)
 	if timingswitch==1    
 		tic
 	end
@@ -53,9 +54,14 @@ function flyrivertype3(gridType,pb,pd,numberOfKids,simulationTimeLength,flyPopul
         [landGrid,altGrid]=readshapealt(gridType{2},gridType{3});
 	elseif gridType{1}==5
 		[landGrid,altGrid]=readshapealtord(gridType{2},gridType{3});
+	elseif gridType{1}==6
+		[landGrid,altGrid]=readshapealtord(gridType{2},gridType{3});
+		eggtime=gridType{4};
+		[landGridWeight,~,~]=weight(landGrid);
     end
 
     simdata=cell(1,Tf+1);
+	
 
     [rows,columns]=find(landGrid==1);
     coordinates=[columns rows];
@@ -64,26 +70,65 @@ function flyrivertype3(gridType,pb,pd,numberOfKids,simulationTimeLength,flyPopul
     flies=zeros(flyPopulationSize,8);
     %death info matrix
     deathInformation=zeros(1,8);
+	
+	
+	simeggdata=cell(1,Tf+1);
+	%creates the eggs matrix
+	eggs=[];%row egg index column 1:3 spatial coord current, 4:6 spatial coord final, 7 eggtime
+	%death info matrix
+	hatchInformation=zeros(1,7);
+	
+	
     n=1;
+	ne=1;
 
     [flies(:,1), flies(:,2), flies(:,3), flies(:,4)]=flyPositioning(flyPopulationSize,coordinates);
     flies(:,6)=flies(:,1);
     flies(:,7)=flies(:,2);
-
+	
 
     %for gridprob need weights of water and land type 1 to 3
-    if gridType{1}~=4 && gridType{1}~=5
+    if gridType{1}~=4 && gridType{1}~=5 && gridType{1}~=6
         waterc=gridType{end-1};
         landc=gridType{end};
         [landGrid_prob]=gridprob(landGrid,landc,waterc);
-    else %type 4 and 5
+    else %type 4 and 5 and 6
         %[landGrid_prob,~]=Alt_gridprob(altGrid);
 		%[landGrid_prob,~]=Alt_gridprob2(altGrid);%needs debugging
 		[landGrid_prob,~]=Alt_gridprob3(altGrid,altprobcoeff);
     end
     
     for t=1:Tf
+		Eggs=eggs;
         for mv=1:nmoves
+		
+			if gridType{1}==6
+				hatchidx=[];
+				%%%%%%%% hatching %%%%%%%%%%%
+				for i=1:size(eggs,1)
+					if eggs(i,7)==eggtime
+						addOn=size(flies,1);	
+						flies(addOn+1,1)=eggs(i,1);
+						flies(addOn+1,2)=eggs(i,2);
+						% flies(addOn+1,3)=0;
+						% flies(addOn+1,4)=0;
+						% flies(addOn+1,5)=0;
+						flies(addOn+1,6)=flies(addOn+1,1);
+						flies(addOn+1,7)=flies(addOn+1,2);
+						%resize matrix
+						hatchidx=[hatchidx i];
+						hatchInformation(ne,1:6)=eggs(i,1:6);
+						hatchInformation(ne,7)=t-1;%hatch time
+						ne=ne+1;
+					end				
+				end
+				eggs(hatchidx,:)=[];
+				%%%%%%%% movement %%%%%%%%%%%
+				if size(eggs,1)>0
+					[eggs]=eggsmotion(eggs,landGridWeight);
+				end
+			end
+			
             %%%%%%%% movement %%%%%%%%%%%
             [fliesHolder]=move_v3(flies,landGrid,landGrid_prob,size(flies,1),coordinates,t);
 
@@ -172,16 +217,30 @@ function flyrivertype3(gridType,pb,pd,numberOfKids,simulationTimeLength,flyPopul
                 deathInformation(n,6)=flies(i,1);
                 deathInformation(n,7)=flies(i,2);
                 %reproduction
-                addOn=size(flies,1);
-                for ii=1:numberOfKids
-                    flies(addOn+ii,1)=flies(i,1);
-                    flies(addOn+ii,2)=flies(i,2);
-                    flies(addOn+ii,3)=flies(i,3);
-                    flies(addOn+ii,4)=flies(i,4);
-                    flies(addOn+ii,6)=flies(addOn+ii,1);
-                    flies(addOn+ii,7)=flies(addOn+ii,2);
-                    %resize matrix
-                end
+				if gridType{1}~=6
+					addOn=size(flies,1);
+					for ii=1:numberOfKids
+						flies(addOn+ii,1)=flies(i,1);
+						flies(addOn+ii,2)=flies(i,2);
+						flies(addOn+ii,3)=flies(i,3);
+						flies(addOn+ii,4)=flies(i,4);
+						flies(addOn+ii,6)=flies(addOn+ii,1);
+						flies(addOn+ii,7)=flies(addOn+ii,2);
+						%resize matrix
+					end
+				else
+					addOn=size(eggs,1);
+					for ii=1:numberOfKids
+						eggs(addOn+ii,1)=flies(i,1);
+						eggs(addOn+ii,2)=flies(i,2);
+						eggs(addOn+ii,3)=1;
+						eggs(addOn+ii,4)=flies(i,1);
+						eggs(addOn+ii,5)=flies(i,2);
+						eggs(addOn+ii,6)=1;
+						eggs(addOn+ii,7)=0;
+						%resize matrix
+					end
+				end
 
                 %when it died
                 deathInformation(n,8)=t;
@@ -231,19 +290,21 @@ function flyrivertype3(gridType,pb,pd,numberOfKids,simulationTimeLength,flyPopul
 
         %Data
         simdata{t}=Flies;
-        if size(flies,1)>=cutoffpop || size(flies,1)==0
+		simeggdata{t}=Eggs;
+        if size(flies,1)>=cutoffpop || (size(flies,1)==0 && size(eggs,1)==0)
             simulationTimeLength=t;
             break;
         end
     end
     simdata{t+1}=flies;
+	simeggdata{t+1}=eggs;
 	
 	%profile switch
 	if profileswitch==1
 		profsave;
 		p=profile('info');
 	end
-    save(datestr(now,'mmmm_dd_yyyy_HH_MM_SS_FFF_AM'),'simulationTimeLength','Tf','landGrid','altGrid','deathInformation','simdata','flyPopulationSize','gridType','pb','pd','numberOfKids','nmoves','altprobcoeff','cutoffpop', 'profileswitch', 'timingswitch','-v7.3');
+    save(datestr(now,'mmmm_dd_yyyy_HH_MM_SS_FFF_AM'),'simulationTimeLength','Tf','landGrid','altGrid','deathInformation','hatchInformation','simdata','simeggdata','flyPopulationSize','gridType','pb','pd','numberOfKids','nmoves','altprobcoeff','cutoffpop', 'profileswitch', 'timingswitch','-v7.3');
     
 	if timingswitch==1
 		toc

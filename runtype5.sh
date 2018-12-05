@@ -7,12 +7,12 @@
 #$ -q long
 #$ -pe smp 24         
 #$ -N  type5 	# Specify job name
-#$ -t 1-2:1       #specify number of data input files
+#$ -t 1-4:1       #specify number of data input files
 #$ -q long
 #$ -r y
 
-set shape=( SanDimasSubset.shp VenturaRiv1_2.shp )
-set alt=( DimasSubsetElevation.tif Ventura1_2.tif )
+set shape=( SanDimasSubset.shp Vent12.shp vent13.shp Vent14.shp)
+set alt=( DimasSubsetElevation.tif Vent12.tif Vent13.tif vent1_41.tif)
 module load matlab
 
 matlab -nodisplay -nosplash -nojvm -r "type5simscript('$shape[${SGE_TASK_ID}]','$alt[${SGE_TASK_ID}]');exit"

@@ -7,8 +7,8 @@ function type4simscript(shapefile,altfile)
 	flyPopulationSize=10000;
 	nmoves=1;
 	altprobcoeff=0.1;
-	cuttoffpop=100000;
+	cutoffpop=100000;
 	profileswitch=0;
 	timingswitch=1;
-	flyrivertype3(gridType,pb,pd,numberOfKids,simulationTimeLength,flyPopulationSize,nmoves,altprobcoeff,cuttoffpop, profileswitch, timingswitch)
+	flyrivertype3(gridType,pb,pd,numberOfKids,simulationTimeLength,flyPopulationSize,nmoves,altprobcoeff,cutoffpop, profileswitch, timingswitch)
 end
