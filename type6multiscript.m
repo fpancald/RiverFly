@@ -1,9 +1,9 @@
-function type6simscript(shapefile,altfile)
+function type6multiscript(shapefile,altfile,Ntask)
 	eggtime=168;
 	gridType={6,shapefile,altfile,eggtime};%shape+altitude+streamorder+eggs
 	pb=0.0270;
 	pd=0.089;
-	numberOfKids=12;
+	numberOfKids=Ntask;
 	simulationTimeLength=2688;
 	flyPopulationSize=10000;
 	nmoves=1;

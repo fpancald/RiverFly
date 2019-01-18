@@ -100,6 +100,10 @@ function flyrivertype4(gridType,pb,pd,numberOfKids,simulationTimeLength,flyPopul
     
     for t=1:Tf
 		Eggs=eggs;
+		Flies=zeros(size(flies,1),8);
+
+        %placeholder for graphing
+        Flies(:,1:8)=flies(:,1:8);
         for mv=1:nmoves
 		
 			if gridType{1}==6
@@ -183,11 +187,6 @@ function flyrivertype4(gridType,pb,pd,numberOfKids,simulationTimeLength,flyPopul
             end
             flies(deathidx,:)=[];
         end
-
-        Flies=zeros(size(flies,1),8);
-
-        %placeholder for graphing
-        Flies(:,1:8)=flies(:,1:8);
 
         aliveBegin=1;
 
